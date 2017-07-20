@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SmartLogger", "SmartLogger\SmartLogger.vcproj", "{DE93BE5A-8F67-415F-B196-6F4C0AE5F2DE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SmartLoggerMessage", "SmartLoggerMessage\SmartLoggerMessage.vcproj", "{BCCFC25F-0DC0-448E-9F02-32F3567CDEC2}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SmartLoggerSetup", "SmartLoggerSetup\SmartLoggerSetup.vdproj", "{94895E22-20D0-4932-91F1-C87B0D164ED9}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SmartLoggerSetup_x86", "SmartLoggerSetup_x86\SmartLoggerSetup_x86.vdproj", "{A26AB0D1-177D-40F8-BB60-227033472E15}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DE93BE5A-8F67-415F-B196-6F4C0AE5F2DE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DE93BE5A-8F67-415F-B196-6F4C0AE5F2DE}.Debug|Win32.Build.0 = Debug|Win32
+		{DE93BE5A-8F67-415F-B196-6F4C0AE5F2DE}.Debug|x64.ActiveCfg = Debug|x64
+		{DE93BE5A-8F67-415F-B196-6F4C0AE5F2DE}.Debug|x64.Build.0 = Debug|x64
+		{DE93BE5A-8F67-415F-B196-6F4C0AE5F2DE}.Release|Win32.ActiveCfg = Release|Win32
+		{DE93BE5A-8F67-415F-B196-6F4C0AE5F2DE}.Release|Win32.Build.0 = Release|Win32
+		{DE93BE5A-8F67-415F-B196-6F4C0AE5F2DE}.Release|x64.ActiveCfg = Release|x64
+		{DE93BE5A-8F67-415F-B196-6F4C0AE5F2DE}.Release|x64.Build.0 = Release|x64
+		{BCCFC25F-0DC0-448E-9F02-32F3567CDEC2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BCCFC25F-0DC0-448E-9F02-32F3567CDEC2}.Debug|Win32.Build.0 = Debug|Win32
+		{BCCFC25F-0DC0-448E-9F02-32F3567CDEC2}.Debug|x64.ActiveCfg = Debug|x64
+		{BCCFC25F-0DC0-448E-9F02-32F3567CDEC2}.Debug|x64.Build.0 = Debug|x64
+		{BCCFC25F-0DC0-448E-9F02-32F3567CDEC2}.Release|Win32.ActiveCfg = Release|Win32
+		{BCCFC25F-0DC0-448E-9F02-32F3567CDEC2}.Release|Win32.Build.0 = Release|Win32
+		{BCCFC25F-0DC0-448E-9F02-32F3567CDEC2}.Release|x64.ActiveCfg = Release|x64
+		{BCCFC25F-0DC0-448E-9F02-32F3567CDEC2}.Release|x64.Build.0 = Release|x64
+		{94895E22-20D0-4932-91F1-C87B0D164ED9}.Debug|Win32.ActiveCfg = Debug
+		{94895E22-20D0-4932-91F1-C87B0D164ED9}.Debug|x64.ActiveCfg = Debug
+		{94895E22-20D0-4932-91F1-C87B0D164ED9}.Release|Win32.ActiveCfg = Release
+		{94895E22-20D0-4932-91F1-C87B0D164ED9}.Release|x64.ActiveCfg = Release
+		{A26AB0D1-177D-40F8-BB60-227033472E15}.Debug|Win32.ActiveCfg = Debug
+		{A26AB0D1-177D-40F8-BB60-227033472E15}.Debug|x64.ActiveCfg = Debug
+		{A26AB0D1-177D-40F8-BB60-227033472E15}.Release|Win32.ActiveCfg = Release
+		{A26AB0D1-177D-40F8-BB60-227033472E15}.Release|x64.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

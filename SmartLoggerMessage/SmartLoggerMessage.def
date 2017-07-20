@@ -1,0 +1,6 @@
+; SmartLoggerMessage.def : DLL のモジュール パラメータを宣言します。
+
+LIBRARY      "SmartLoggerMessage"
+
+EXPORTS
+    ; 明示的なエクスポートはここへ記述できます
