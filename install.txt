@@ -1,0 +1,26 @@
+
+SMART Loggerセットアップ
+
+  SmartLogger\setup.exeを実行する。
+  普通にインストールする。
+
+  コマンドプロンプトを起動し、以下のように実行する。
+  管理者権限が必要。
+
+    cd "C:\Program Files\SmartLogger\"
+    SmartLogger /install "C:\Program Files\SmartLogger\SmartLogger.exe"
+
+  レジストリエディタを起動する。
+  以下のキーを選択する。
+
+    HKEY_LOCAL_MACHINE\Software\TOPS\SmartLogger
+
+      データ名           内容
+      LogFilePath        ログファイル出力ディレクトリパス。
+      FluentcatPath      fluent-cat.batのパス。
+      FluentdSensorName  センサー名。td-agent.confのmatchタグの属性に対応する。
+      FluentdHostName    データを送信するfluentdのホストアドレス。
+
+    LogFilePathとFluentdSensorNameを設定する。
+
+以上
