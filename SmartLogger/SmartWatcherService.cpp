@@ -689,14 +689,19 @@ void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluent
 
 	if (jsonBuffer != NULL)
 	{
-		int sendRecv =
-			SendtoFluentCat(
-				fluentCatPath,
-				fluentdSensorName,
-				fluentdHostName,
-				jsonBuffer);
+		if (! fluentCatPath.IsEmpty() && ! fluentdSensorName.IsEmpty() && ! fluentdHostName.IsEmpty())
+		{
+			// fluentcat呼び出し用パラメータの指定あり
 
-		CSmartLoggerLogging::PutLog(new CSendtoFluentdLog(sendRecv, jsonBuffer));
+			int sendRecv =
+				SendtoFluentCat(
+					fluentCatPath,
+					fluentdSensorName,
+					fluentdHostName,
+					jsonBuffer);
+
+			CSmartLoggerLogging::PutLog(new CSendtoFluentdLog(sendRecv, jsonBuffer));
+		}
 
 		delete [] jsonBuffer;
 	}
