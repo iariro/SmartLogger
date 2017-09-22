@@ -204,14 +204,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:SMART Logger"
-        "ProductCode" = "8:{2E599471-20FB-45D0-BCBA-1FDBFE5B5DAC}"
-        "PackageCode" = "8:{068E257D-911A-4DBD-8C99-413DA786BEC6}"
+        "ProductCode" = "8:{09B4C295-9AF6-4841-AF58-A8EC54C32B81}"
+        "PackageCode" = "8:{8D1D0271-D187-4D8D-A959-E71AC5633BE2}"
         "UpgradeCode" = "8:{582E6678-54B6-474A-8200-C5237255EEB1}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:1.0.1"
         "Manufacturer" = "8:TOPS"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -871,7 +871,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_8089225A9E5840A1BAD73C726C0F023C"
             {
-            "SourcePath" = "8:..\\Release\\SmartLoggerMessage.dll"
+            "SourcePath" = "8:..\\x64\\Release\\SmartLoggerMessage.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_63CFF9CDDCD746DCA91EF0595E97A24C"
@@ -899,7 +899,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_DA67B7F9E3BD4369AC76F79F6BF79BBF"
             {
-            "SourcePath" = "8:..\\Release\\SmartLogger.exe"
+            "SourcePath" = "8:..\\x64\\Release\\SmartLogger.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_63CFF9CDDCD746DCA91EF0595E97A24C"

@@ -333,6 +333,7 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 	CString * fluentcatPath = NULL;
 	CString * fluentdSensorName = NULL;
 	CString * fluentdHostName = NULL;
+	DWORD * smartWatchInterval2 = NULL;
 
 	CRegistryRootKey root(registryPath);
 
@@ -350,6 +351,7 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 			fluentcatPath = subKey->GetStringValue(_T("FluentcatPath"));
 			fluentdSensorName = subKey->GetStringValue(_T("FluentdSensorName"));
 			fluentdHostName = subKey->GetStringValue(_T("FluentdHostName"));
+			smartWatchInterval2 = subKey->GetDWordValue(_T("SmartWatchInterval"));
 
 			delete subKey;
 		}
@@ -364,6 +366,16 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 		return 0;
 	}
 
+	int smartWatchInterval;
+	if (smartWatchInterval2 != NULL)
+	{
+		smartWatchInterval = *smartWatchInterval2;
+	}
+	else
+	{
+		smartWatchInterval = SMART_WATCH_INTERVAL;
+	}
+
 	CSmartLoggerLogging::PutLog(new CStartServiceLog(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName));
 
 	GetAndWriteSmart(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName);
@@ -374,20 +386,36 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 	{
 		DWORD now = ::GetTickCount();
 
-		if (last + SMART_WATCH_INTERVAL < now)
+		if (last + smartWatchInterval < now)
 		{
 			GetAndWriteSmart(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName);
 
-			last += SMART_WATCH_INTERVAL;
+			last += smartWatchInterval;
 		}
 
 		::Sleep(1000);
 	}
 
-	delete logFilePath;
-	delete fluentcatPath;
-	delete fluentdSensorName;
-	delete fluentdHostName;
+	if (logFilePath == NULL)
+	{
+		delete logFilePath;
+	}
+	if (fluentcatPath == NULL)
+	{
+		delete fluentcatPath;
+	}
+	if (fluentdSensorName == NULL)
+	{
+		delete fluentdSensorName;
+	}
+	if (fluentdHostName == NULL)
+	{
+		delete fluentdHostName;
+	}
+	if (smartWatchInterval2 == NULL)
+	{
+		delete smartWatchInterval2;
+	}
 
 	return 0;
 }
