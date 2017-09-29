@@ -34,15 +34,15 @@ MessageId=0x5
 SymbolicName=EVENT_SENDTO_FLUENTD_EVENT1
 Language=Japanese
 fluent-caté¿çs%r
-(%1)
+Error=%1
 .
 
 MessageId=0x6
 SymbolicName=EVENT_SENDTO_FLUENTD_EVENT
 Language=Japanese
 fluent-caté¿çs%r
-(%1)%r
-%2
+Error=%1%r
+Json=%2
 .
 
 MessageId=0x7
