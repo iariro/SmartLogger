@@ -370,7 +370,7 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 	int smartWatchInterval;
 	if (smartWatchInterval2 != NULL)
 	{
-		smartWatchInterval = *smartWatchInterval2;
+		smartWatchInterval = *smartWatchInterval2 * 1000;
 	}
 	else
 	{

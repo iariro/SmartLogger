@@ -20,7 +20,7 @@ SMART Loggerセットアップ
       FluentcatPath      fluent-cat.batのパス。
       FluentdSensorName  センサー名。td-agent.confのmatchタグの属性に対応する。
       FluentdHostName    データを送信するfluentdのホストアドレス。
-      SmartWatchInterval SMART取得インターバル（ミリ秒）
+      SmartWatchInterval SMART取得インターバル（秒）
 
     LogFilePathとFluentdSensorNameを設定する。
 

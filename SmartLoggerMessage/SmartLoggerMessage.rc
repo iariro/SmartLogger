@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,0,2,1
+ PRODUCTVERSION 1,0,2,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -87,12 +87,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "kumagai"
             VALUE "FileDescription", "SMART Logger Message Module"
-            VALUE "FileVersion", "1.0.0.1"
+            VALUE "FileVersion", "1.0.2.1"
             VALUE "InternalName", "SmartLoggerMessage.dll"
             VALUE "LegalCopyright", "kumagai.  All rights reserved."
             VALUE "OriginalFilename", "SmartLoggerMessage.dll"
             VALUE "ProductName", "SMART Logger Message Module"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "ProductVersion", "1.0.2.1"
         END
     END
     BLOCK "VarFileInfo"
