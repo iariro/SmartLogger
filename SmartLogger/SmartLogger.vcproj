@@ -396,10 +396,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\Log\SmartLoggerLogData.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\Log\SmartLoggerLogging.cpp"
 					>
 				</File>
@@ -491,10 +487,6 @@
 				</File>
 				<File
 					RelativePath=".\Log\ReportEventData.h"
-					>
-				</File>
-				<File
-					RelativePath=".\Log\SmartLoggerLogData.h"
 					>
 				</File>
 				<File

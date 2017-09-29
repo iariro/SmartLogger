@@ -9,7 +9,7 @@
 
 #include "Log/Str.h"
 #include "Log/StrArray.h"
-#include "Log/SmartLoggerLogData.h"
+#include "Log/ReportEventData.h"
 #include "Log/SmartLoggerLogging.h"
 
 #ifdef _DEBUG

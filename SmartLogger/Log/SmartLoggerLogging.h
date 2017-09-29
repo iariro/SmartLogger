@@ -6,6 +6,9 @@
  */
 class CSmartLoggerLogging
 {
+private:
+	static TCHAR * source;
+
 public:
-	static void PutLog(CSmartLoggerLogData * data);
+	static BOOL PutLog(CReportEventData * data);
 };

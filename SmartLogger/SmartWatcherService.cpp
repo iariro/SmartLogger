@@ -12,8 +12,9 @@
 
 #include "Log/Str.h"
 #include "Log/StrArray.h"
-#include "Log/SmartLoggerLogData.h"
+#include "Log/ReportEventData.h"
 #include "Log/SmartLoggerLogging.h"
+#include "Log/SmartLoggerReportEventData.h"
 
 #include "Utility/BinaryBlock.h"
 #include "Registry/RegistryValue.h"
@@ -101,7 +102,7 @@ VOID WINAPI ServiceMain(DWORD argc,	// 引数個数
 	{
 		// サービスコントロールハンドラ関数の登録失敗 - 即座に終了
 		// ログ出力
-		CSmartLoggerLogging::PutLog(new CStartServiceErrorLog(_T("サービスコントロールハンドラ関数の登録")));
+		CSmartLoggerLogging::PutLog(new CStartServiceErrorEvent(_T("サービスコントロールハンドラ関数の登録")));
 		return;
 	}
 
@@ -122,7 +123,7 @@ VOID WINAPI ServiceMain(DWORD argc,	// 引数個数
 	{
 		// 失敗 - 即座に終了
 		// ログ出力
-		CSmartLoggerLogging::PutLog(new CStartServiceErrorLog(_T("サービス終了シグナルイベントの生成")));
+		CSmartLoggerLogging::PutLog(new CStartServiceErrorEvent(_T("サービス終了シグナルイベントの生成")));
 		return;
 	}
 
@@ -143,7 +144,7 @@ VOID WINAPI ServiceMain(DWORD argc,	// 引数個数
 	{
 		// スレッド作成に失敗 - 即座に終了
 		// ログ出力
-		CSmartLoggerLogging::PutLog(new CStartServiceErrorLog(_T("サービス本体スレッドの生成")));
+		CSmartLoggerLogging::PutLog(new CStartServiceErrorEvent(_T("サービス本体スレッドの生成")));
 		return;
 	}
 
@@ -223,7 +224,7 @@ VOID WINAPI ServiceCtrlHandler(DWORD fdwControl		// 要求したい制御コード
 		}
 
 		// SMARTLOGGERが停止したことを示すログを出力
-		CSmartLoggerLogging::PutLog(new CStopServiceLog());
+		CSmartLoggerLogging::PutLog(new CStopServiceEvent());
 
 		/*
 		 * 終了シグナルの通知
@@ -310,7 +311,7 @@ BOOL SendStatusToSCM(DWORD	dwCurrentState,				// サービスステータス
 	{
 		// サービス状態の設定に失敗
 		// ログを出力
-		CSmartLoggerLogging::PutLog(new CSendStatusToSCMErrorLog(dwCurrentState, dwCheckPoint));
+		CSmartLoggerLogging::PutLog(new CSendStatusToSCMErrorEvent(dwCurrentState, dwCheckPoint));
 		return FALSE;
 	}
 
@@ -362,7 +363,7 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 		fluentdSensorName == NULL ||
 		fluentdHostName == NULL)
 	{
-		CSmartLoggerLogging::PutLog(new CStartServiceErrorLog(_T("設定不足")));
+		CSmartLoggerLogging::PutLog(new CStartServiceErrorEvent(_T("設定不足")));
 		return 0;
 	}
 
@@ -376,7 +377,7 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 		smartWatchInterval = SMART_WATCH_INTERVAL;
 	}
 
-	CSmartLoggerLogging::PutLog(new CStartServiceLog(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName));
+	CSmartLoggerLogging::PutLog(new CStartServiceEvent(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName, smartWatchInterval));
 
 	GetAndWriteSmart(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName);
 
@@ -396,23 +397,23 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 		::Sleep(1000);
 	}
 
-	if (logFilePath == NULL)
+	if (logFilePath != NULL)
 	{
 		delete logFilePath;
 	}
-	if (fluentcatPath == NULL)
+	if (fluentcatPath != NULL)
 	{
 		delete fluentcatPath;
 	}
-	if (fluentdSensorName == NULL)
+	if (fluentdSensorName != NULL)
 	{
 		delete fluentdSensorName;
 	}
-	if (fluentdHostName == NULL)
+	if (fluentdHostName != NULL)
 	{
 		delete fluentdHostName;
 	}
-	if (smartWatchInterval2 == NULL)
+	if (smartWatchInterval2 != NULL)
 	{
 		delete smartWatchInterval2;
 	}
@@ -684,13 +685,13 @@ void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluent
 			}
 			else
 			{
-				CSmartLoggerLogging::PutLog(new CFileWriteErrorLog(filename));
+				CSmartLoggerLogging::PutLog(new CFileWriteErrorEvent(filename));
 			}
 		}
 	}
 	else
 	{
-		CSmartLoggerLogging::PutLog(new CStartServiceErrorLog(_T("CSmartDevice::open")));
+		CSmartLoggerLogging::PutLog(new CStartServiceErrorEvent(_T("CSmartDevice::open")));
 	}
 
 	char * jsonBuffer =
@@ -728,7 +729,7 @@ void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluent
 					fluentdHostName,
 					jsonBuffer);
 
-			CSmartLoggerLogging::PutLog(new CSendtoFluentdLog(sendRecv, jsonBuffer));
+			CSmartLoggerLogging::PutLog(new CSendtoFluentdEvent(sendRecv, jsonBuffer));
 		}
 
 		delete [] jsonBuffer;

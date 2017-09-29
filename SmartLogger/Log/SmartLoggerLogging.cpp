@@ -1,12 +1,12 @@
 #include "StdAfx.h"
 #include "Str.h"
 #include "StrArray.h"
-#include "SmartLoggerLogData.h"
-#include "SmartLoggerLogging.h"
 #include "ReportEventData.h"
+#include "SmartLoggerLogging.h"
 #include "EventReporter.h"
 #include "SmartLoggerReportEventData.h"
 
+TCHAR * CSmartLoggerLogging::source = _T("SMART Logger");
 
 /**
  * @brief  ログ情報出力
@@ -16,28 +16,16 @@
  *
  * @param  logData ログデータ
  */
-void CSmartLoggerLogging::PutLog(CSmartLoggerLogData * logData)
+BOOL CSmartLoggerLogging::PutLog(CReportEventData * data)
 {
-	BOOL recv;
-	CEventReporter * reporter;
-	CReportEventData * data;
+	BOOL recv = FALSE;
+	CEventReporter reporter(source);
 
-	reporter = new CEventReporter(logData->source);
-
-	recv = reporter->Open();
-	if (recv)
+	if (reporter.Open())
 	{
-		data =
-			new CSmartLoggerReportEventData(
-				(WORD)logData->type,
-				(DWORD)logData->eventId,
-				logData->code,
-				logData->message->GetCharPtr());
-
-		recv = reporter->ReportEvent(data);
-		reporter->Close();
+		recv = reporter.ReportEvent(data);
+		reporter.Close();
 	}
-	delete reporter;
 
-	delete logData;
+	return recv;
 }
