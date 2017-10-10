@@ -102,7 +102,7 @@ VOID WINAPI ServiceMain(DWORD argc,	// 引数個数
 	{
 		// サービスコントロールハンドラ関数の登録失敗 - 即座に終了
 		// ログ出力
-		CSmartLoggerLogging::PutLog(new CStartServiceErrorEvent(_T("サービスコントロールハンドラ関数の登録")));
+		CSmartLoggerLogging::PutLog(&CStartServiceErrorEvent(_T("サービスコントロールハンドラ関数の登録")));
 		return;
 	}
 
@@ -123,7 +123,7 @@ VOID WINAPI ServiceMain(DWORD argc,	// 引数個数
 	{
 		// 失敗 - 即座に終了
 		// ログ出力
-		CSmartLoggerLogging::PutLog(new CStartServiceErrorEvent(_T("サービス終了シグナルイベントの生成")));
+		CSmartLoggerLogging::PutLog(&CStartServiceErrorEvent(_T("サービス終了シグナルイベントの生成")));
 		return;
 	}
 
@@ -144,7 +144,7 @@ VOID WINAPI ServiceMain(DWORD argc,	// 引数個数
 	{
 		// スレッド作成に失敗 - 即座に終了
 		// ログ出力
-		CSmartLoggerLogging::PutLog(new CStartServiceErrorEvent(_T("サービス本体スレッドの生成")));
+		CSmartLoggerLogging::PutLog(&CStartServiceErrorEvent(_T("サービス本体スレッドの生成")));
 		return;
 	}
 
@@ -224,7 +224,7 @@ VOID WINAPI ServiceCtrlHandler(DWORD fdwControl		// 要求したい制御コード
 		}
 
 		// SMARTLOGGERが停止したことを示すログを出力
-		CSmartLoggerLogging::PutLog(new CStopServiceEvent());
+		CSmartLoggerLogging::PutLog(&CStopServiceEvent());
 
 		/*
 		 * 終了シグナルの通知
@@ -311,7 +311,7 @@ BOOL SendStatusToSCM(DWORD	dwCurrentState,				// サービスステータス
 	{
 		// サービス状態の設定に失敗
 		// ログを出力
-		CSmartLoggerLogging::PutLog(new CSendStatusToSCMErrorEvent(dwCurrentState, dwCheckPoint));
+		CSmartLoggerLogging::PutLog(&CSendStatusToSCMErrorEvent(dwCurrentState, dwCheckPoint));
 		return FALSE;
 	}
 
@@ -363,7 +363,7 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 		fluentdSensorName == NULL ||
 		fluentdHostName == NULL)
 	{
-		CSmartLoggerLogging::PutLog(new CStartServiceErrorEvent(_T("設定不足")));
+		CSmartLoggerLogging::PutLog(&CStartServiceErrorEvent(_T("設定不足")));
 		return 0;
 	}
 
@@ -377,7 +377,7 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 		smartWatchInterval = SMART_WATCH_INTERVAL;
 	}
 
-	CSmartLoggerLogging::PutLog(new CStartServiceEvent(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName, smartWatchInterval));
+	CSmartLoggerLogging::PutLog(&CStartServiceEvent(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName, smartWatchInterval));
 
 	GetAndWriteSmart(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName);
 
@@ -576,122 +576,135 @@ void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluent
 		log = device.ReadLog(0, 1);
 		device.Close();
 
-
-		int blockCount = 0;
-		if (identify != NULL)
+		if (identify != NULL ||
+			smartValue != NULL ||
+			threshold != NULL ||
+			log != NULL)
 		{
-			blockCount++;
-		}
-		if (smartValue != NULL)
-		{
-			blockCount++;
-		}
-		if (threshold != NULL)
-		{
-			blockCount++;
-		}
-		if (log != NULL)
-		{
-			blockCount++;
-		}
+			// got something
 
-		if (! logFilePath.IsEmpty())
-		{
-			// ログ出力パスの指定あり
-
-			CTime time = CTime::GetCurrentTime();
-			char header [68];
-			::ZeroMemory(header, 68);
-			strcpy_s(header, "SMARTCrawlResult");
-
-			sprintf_s(
-				header + 48,
-				16,
-				"%04d%02d%02d%02d%02d%02d",
-				time.GetYear(),
-				time.GetMonth(),
-				time.GetDay(),
-				time.GetHour(),
-				time.GetMinute(),
-				time.GetSecond());
-
-			memcpy(header + 64, &blockCount, sizeof(int));
-
-			CFile file;
-
-			CString filename;
-
-			filename.Format(
-				_T("%s\\smart_%04d%02d%02d"),
-				logFilePath,
-				time.GetYear(),
-				time.GetMonth(),
-				time.GetDay());
-
-			if (file.Open(filename, CFile::modeCreate|CFile::modeNoTruncate|CFile::modeWrite|CFile::typeBinary))
+			int blockCount = 0;
+			if (identify != NULL)
 			{
-				file.SeekToEnd();
-				file.Write(header, sizeof(header));
-				BYTE blockHeader [12];
-				::ZeroMemory(blockHeader, sizeof(blockHeader));
-				blockHeader[0] = 10;
-
-				if (identify != NULL)
-				{
-					blockHeader[5] = 0xec;
-					blockHeader[6] = 0x00;
-					blockHeader[8] = IDENTIFY_BUFFER_SIZE % 0x100; // size
-					blockHeader[9] = IDENTIFY_BUFFER_SIZE / 0x100; // size
-					blockHeader[10] = 0x00;
-					blockHeader[11] = 0x00;
-					file.Write(blockHeader, 12);
-					file.Write((BYTE *)identify->sSendCmdOutParam.bBuffer, IDENTIFY_BUFFER_SIZE);
-				}
-				if (smartValue != NULL)
-				{
-					blockHeader[5] = 0xb0;
-					blockHeader[6] = 0xd0;
-					blockHeader[8] = READ_ATTRIBUTE_BUFFER_SIZE % 0x100; // size
-					blockHeader[9] = READ_ATTRIBUTE_BUFFER_SIZE / 0x100; // size
-					blockHeader[10] = 0x00;
-					blockHeader[11] = 0x00;
-					file.Write(blockHeader, 12);
-					file.Write((BYTE *)smartValue->sSendCmdOutParam.bBuffer, READ_ATTRIBUTE_BUFFER_SIZE);
-				}
-				if (threshold != NULL)
-				{
-					blockHeader[5] = 0xb0;
-					blockHeader[6] = 0xd1;
-					blockHeader[8] = READ_THRESHOLD_BUFFER_SIZE % 0x100; // size
-					blockHeader[9] = READ_THRESHOLD_BUFFER_SIZE / 0x100; // size
-					blockHeader[10] = 0x00;
-					blockHeader[11] = 0x00;
-					file.Write(blockHeader, 12);
-					file.Write((BYTE *)threshold->sSendCmdOutParam.bBuffer, READ_THRESHOLD_BUFFER_SIZE);
-				}
-				if (log != NULL)
-				{
-					blockHeader[5] = 0xb0;
-					blockHeader[6] = 0xd5;
-					blockHeader[7] = 0x00;
-					blockHeader[8] = sizeof(ata_smart_exterrlog) % 0x100; // size
-					blockHeader[9] = sizeof(ata_smart_exterrlog) / 0x100; // size
-					blockHeader[10] = 0x00;
-					blockHeader[11] = 0x00;
-					file.Write(blockHeader, 12);
-					file.Write((BYTE *)log->sSendCmdOutParam.bBuffer, sizeof(ata_smart_exterrlog));
-				}
-				file.Close();
+				blockCount++;
 			}
-			else
+			if (smartValue != NULL)
 			{
-				CSmartLoggerLogging::PutLog(new CFileWriteErrorEvent(filename));
+				blockCount++;
 			}
+			if (threshold != NULL)
+			{
+				blockCount++;
+			}
+			if (log != NULL)
+			{
+				blockCount++;
+			}
+
+			if (! logFilePath.IsEmpty())
+			{
+				// ログ出力パスの指定あり
+
+				CTime time = CTime::GetCurrentTime();
+				char header [68];
+				::ZeroMemory(header, 68);
+				strcpy_s(header, "SMARTCrawlResult");
+
+				sprintf_s(
+					header + 48,
+					16,
+					"%04d%02d%02d%02d%02d%02d",
+					time.GetYear(),
+					time.GetMonth(),
+					time.GetDay(),
+					time.GetHour(),
+					time.GetMinute(),
+					time.GetSecond());
+
+				memcpy(header + 64, &blockCount, sizeof(int));
+
+				CFile file;
+
+				CString filename;
+
+				filename.Format(
+					_T("%s\\smart_%04d%02d%02d"),
+					logFilePath,
+					time.GetYear(),
+					time.GetMonth(),
+					time.GetDay());
+
+				if (file.Open(filename, CFile::modeCreate|CFile::modeNoTruncate|CFile::modeWrite|CFile::typeBinary))
+				{
+					file.SeekToEnd();
+					file.Write(header, sizeof(header));
+					BYTE blockHeader [12];
+					::ZeroMemory(blockHeader, sizeof(blockHeader));
+					blockHeader[0] = 10;
+
+					if (identify != NULL)
+					{
+						blockHeader[5] = 0xec;
+						blockHeader[6] = 0x00;
+						blockHeader[8] = IDENTIFY_BUFFER_SIZE % 0x100; // size
+						blockHeader[9] = IDENTIFY_BUFFER_SIZE / 0x100; // size
+						blockHeader[10] = 0x00;
+						blockHeader[11] = 0x00;
+						file.Write(blockHeader, 12);
+						file.Write((BYTE *)identify->sSendCmdOutParam.bBuffer, IDENTIFY_BUFFER_SIZE);
+					}
+					if (smartValue != NULL)
+					{
+						blockHeader[5] = 0xb0;
+						blockHeader[6] = 0xd0;
+						blockHeader[8] = READ_ATTRIBUTE_BUFFER_SIZE % 0x100; // size
+						blockHeader[9] = READ_ATTRIBUTE_BUFFER_SIZE / 0x100; // size
+						blockHeader[10] = 0x00;
+						blockHeader[11] = 0x00;
+						file.Write(blockHeader, 12);
+						file.Write((BYTE *)smartValue->sSendCmdOutParam.bBuffer, READ_ATTRIBUTE_BUFFER_SIZE);
+					}
+					if (threshold != NULL)
+					{
+						blockHeader[5] = 0xb0;
+						blockHeader[6] = 0xd1;
+						blockHeader[8] = READ_THRESHOLD_BUFFER_SIZE % 0x100; // size
+						blockHeader[9] = READ_THRESHOLD_BUFFER_SIZE / 0x100; // size
+						blockHeader[10] = 0x00;
+						blockHeader[11] = 0x00;
+						file.Write(blockHeader, 12);
+						file.Write((BYTE *)threshold->sSendCmdOutParam.bBuffer, READ_THRESHOLD_BUFFER_SIZE);
+					}
+					if (log != NULL)
+					{
+						blockHeader[5] = 0xb0;
+						blockHeader[6] = 0xd5;
+						blockHeader[7] = 0x00;
+						blockHeader[8] = sizeof(ata_smart_exterrlog) % 0x100; // size
+						blockHeader[9] = sizeof(ata_smart_exterrlog) / 0x100; // size
+						blockHeader[10] = 0x00;
+						blockHeader[11] = 0x00;
+						file.Write(blockHeader, 12);
+						file.Write((BYTE *)log->sSendCmdOutParam.bBuffer, sizeof(ata_smart_exterrlog));
+					}
+					file.Close();
+				}
+				else
+				{
+					CSmartLoggerLogging::PutLog(&CFileWriteErrorEvent(filename));
+				}
+			}
+		}
+		else
+		{
+			// all null
+
+			CSmartLoggerLogging::PutLog(&CGetSmartErrorEvent());
 		}
 	}
 	else
 	{
-		CSmartLoggerLogging::PutLog(new CStartServiceErrorEvent(_T("CSmartDevice::open")));
+		CSmartLoggerLogging::PutLog(&CStartServiceErrorEvent(_T("CSmartDevice::open")));
 	}
 
 	char * jsonBuffer =
@@ -729,7 +742,7 @@ void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluent
 					fluentdHostName,
 					jsonBuffer);
 
-			CSmartLoggerLogging::PutLog(new CSendtoFluentdEvent(sendRecv, jsonBuffer));
+			CSmartLoggerLogging::PutLog(&CSendtoFluentdEvent(sendRecv, jsonBuffer));
 		}
 
 		delete [] jsonBuffer;

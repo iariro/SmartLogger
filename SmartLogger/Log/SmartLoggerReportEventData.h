@@ -38,6 +38,17 @@ public:
 };
 
 /**
+ * @brief SMART取得エラーについてのログ
+ * @ingroup LogData
+ */
+class CGetSmartErrorEvent
+	: public CReportEventData
+{
+public:
+	CGetSmartErrorEvent(void);
+};
+
+/**
  * @brief ファイル出力エラーについてのログ
  * @ingroup LogData
  */

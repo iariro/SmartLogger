@@ -24,20 +24,26 @@ Language=Japanese
 サービス開始処理実行中に「%1」にてエラーが発生しました。
 .
 
-MessageId=0x4
+MessageId=0x10
+SymbolicName=EVENT_GET_SMART_ERROR
+Language=Japanese
+SMART取得に失敗
+.
+
+MessageId=0x11
 SymbolicName=EVENT_FILE_WRITE_ERROR
 Language=Japanese
 ファイル「%1」の作成に失敗
 .
 
-MessageId=0x5
+MessageId=0x20
 SymbolicName=EVENT_SENDTO_FLUENTD_EVENT1
 Language=Japanese
 fluent-cat実行%r
 Error=%1
 .
 
-MessageId=0x6
+MessageId=0x21
 SymbolicName=EVENT_SENDTO_FLUENTD_EVENT
 Language=Japanese
 fluent-cat実行%r

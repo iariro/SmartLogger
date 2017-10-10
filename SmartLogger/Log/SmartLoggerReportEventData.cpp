@@ -9,6 +9,12 @@
  * @brief
  * オブジェクトの構築とともに基底クラスの初期化，メッセージの組み立てを行う。
  *
+ * @param fluentCatPath fluent-cat.exeのパス
+ * @param logFilePath SMARTファイル出力パス
+ * @param fluentdSensorName fluentdセンサー名
+ * @param fluentdHostName fluentdホスト名
+ * @param smartWatchInterval SMART取得インターバル
+ *
  * @author kumagai
  */
 CStartServiceEvent::CStartServiceEvent(CString fluentCatPath, CString logFilePath, CString fluentdSensorName, CString fluentdHostName, int smartWatchInterval)
@@ -57,11 +63,22 @@ CStartServiceErrorEvent::CStartServiceErrorEvent(TCHAR * info)
 
 /**
  * @brief オブジェクトの構築とともに基底クラスの初期化を行う。
+ */
+CGetSmartErrorEvent::CGetSmartErrorEvent()
+	: CReportEventData(EVENTLOG_ERROR_TYPE, 0, EVENT_GET_SMART_ERROR)
+{
+	strings = new CCharPtrArray();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief オブジェクトの構築とともに基底クラスの初期化を行う。
  *
- * @param error エラーコード
+ * @param path ファイルパス
  */
 CFileWriteErrorEvent::CFileWriteErrorEvent(CString path)
-	: CReportEventData(EVENTLOG_INFORMATION_TYPE, 0, EVENT_FILE_WRITE_ERROR)
+	: CReportEventData(EVENTLOG_ERROR_TYPE, 0, EVENT_FILE_WRITE_ERROR)
 {
 	strings = new CCharPtrArray();
 	strings->Add(path.GetBuffer());
@@ -72,7 +89,7 @@ CFileWriteErrorEvent::CFileWriteErrorEvent(CString path)
 /**
  * @brief オブジェクトの構築とともに基底クラスの初期化を行う。
  *
- * @param error エラーコード
+ * @param commandLine fluent-cat呼び出しコマンドライン
  */
 CSendtoFluentdEvent1::CSendtoFluentdEvent1(CString commandLine)
 	: CReportEventData(EVENTLOG_INFORMATION_TYPE, 0, EVENT_SENDTO_FLUENTD_EVENT1)
@@ -86,6 +103,7 @@ CSendtoFluentdEvent1::CSendtoFluentdEvent1(CString commandLine)
  * @brief オブジェクトの構築とともに基底クラスの初期化を行う。
  *
  * @param error エラーコード
+ * @param json 送信JSON文字列
  */
 CSendtoFluentdEvent::CSendtoFluentdEvent(int error, char * json)
 	: CReportEventData(EVENTLOG_INFORMATION_TYPE, 0, EVENT_SENDTO_FLUENTD_EVENT)
@@ -109,8 +127,8 @@ CSendtoFluentdEvent::CSendtoFluentdEvent(int error, char * json)
 /**
  * @brief オブジェクトの構築とともに基底クラスの初期化を行う。
  *
- * @param  status エラー発生時の通知ステータス
- * @param  checkPoint エラー発生時のステータス進捗指標
+ * @param status エラー発生時の通知ステータス
+ * @param checkPoint エラー発生時のステータス進捗指標
  */
 CSendStatusToSCMErrorEvent::CSendStatusToSCMErrorEvent(DWORD status, DWORD checkPoint)
 	: CReportEventData(EVENTLOG_ERROR_TYPE, 0, EVENT_SENDSTATUSTOSCM_ERROR)

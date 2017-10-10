@@ -80,8 +80,10 @@ BYTE * CSmartDevice::CommandInterface
 			&dwReturned,
 			NULL);
 
-	if (bRet && dwReturned != sizeof(SMART_READ_DATA_OUTDATA))
+	if (!bRet || dwReturned != sizeof(SMART_READ_DATA_OUTDATA))
 	{
+		// execute error or return size error
+
 		delete [] sendCmdOutParam;
 
 		return NULL;
