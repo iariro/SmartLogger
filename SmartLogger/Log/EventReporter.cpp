@@ -58,20 +58,15 @@ BOOL CEventReporter::Close(void)
  */
 BOOL CEventReporter::ReportEvent(CReportEventData * data)
 {
-	BOOL recv;
-
-	recv = ::ReportEvent(
-		handle,
-		data->type,
-		data->category,
-		data->eventId,
-		data->userSid,
-		(WORD)data->strings->GetSize(),
-		(DWORD)data->binarySize,
-		(LPCTSTR *)data->strings->GetPointers(),
-		(LPVOID)data->binary);
-
-	delete data;
-
-	return recv;
+	return
+		::ReportEvent(
+			handle,
+			data->type,
+			data->category,
+			data->eventId,
+			data->userSid,
+			(WORD)data->strings->GetSize(),
+			(DWORD)data->binarySize,
+			(LPCTSTR *)data->strings->GetPointers(),
+			(LPVOID)data->binary);
 }

@@ -205,7 +205,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:SMART Logger"
         "ProductCode" = "8:{21C4F99B-273D-49DE-ACCA-599132EC131B}"
-        "PackageCode" = "8:{9E127512-FD37-48FB-9055-D0BB0E6D497C}"
+        "PackageCode" = "8:{00664C3D-097E-4E21-9FE6-4AD1EB321E14}"
         "UpgradeCode" = "8:{582E6678-54B6-474A-8200-C5237255EEB1}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
@@ -388,7 +388,7 @@
                                             "Condition" = "8:"
                                             "Transitive" = "11:FALSE"
                                             "ValueTypes" = "3:1"
-                                            "Value" = "8:C:\\temp\\smart\\"
+                                            "Value" = "8:C:\\ProgramData\\SMARTLogger\\smart"
                                             }
                                             "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_A5B6671FAE7B4F60838E87C469474375"
                                             {
