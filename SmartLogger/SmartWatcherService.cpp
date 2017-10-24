@@ -570,10 +570,15 @@ void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluent
 
 	if (device.Open(0))
 	{
-		identify = device.ReadIdentify();
-		smartValue = device.ReadSmart();
-		threshold = device.ReadThreshold();
-		log = device.ReadLog(0, 1);
+		DWORD readIdentifyError;
+		DWORD readSmartError;
+		DWORD readThresholdError;
+		DWORD readLogError;
+
+		identify = device.ReadIdentify(&readIdentifyError);
+		smartValue = device.ReadSmart(&readSmartError);
+		threshold = device.ReadThreshold(&readThresholdError);
+		log = device.ReadLog(0, 1, &readLogError);
 		device.Close();
 
 		if (identify != NULL ||
@@ -699,7 +704,7 @@ void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluent
 		{
 			// all null
 
-			CSmartLoggerLogging::PutLog(&CGetSmartErrorEvent());
+			CSmartLoggerLogging::PutLog(&CGetSmartErrorEvent(readIdentifyError, readSmartError, readThresholdError, readLogError));
 		}
 	}
 	else

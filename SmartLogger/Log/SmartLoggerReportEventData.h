@@ -45,7 +45,7 @@ class CGetSmartErrorEvent
 	: public CReportEventData
 {
 public:
-	CGetSmartErrorEvent(void);
+	CGetSmartErrorEvent(DWORD readIdentifyError, DWORD readSmartError, DWORD readThresholdError, DWORD readLogError);
 };
 
 /**

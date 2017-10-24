@@ -443,12 +443,12 @@ class CSmartDevice
 public:
 	BOOL Open(BYTE deviceNo);
 	BOOL Close();
-	IDENTIFY_DEVICE_OUTDATA * ReadIdentify();
-	SMART_READ_DATA_OUTDATA * ReadSmart();
-	SMART_READ_DATA_OUTDATA * ReadThreshold();
-	SMART_READ_LOG_OUTDATA * ReadLog(int logAddress, int sectorCount);
-	BYTE * ReadLogExt(int logAddress, int sectorCount);
+	IDENTIFY_DEVICE_OUTDATA * ReadIdentify(DWORD * error);
+	SMART_READ_DATA_OUTDATA * ReadSmart(DWORD * error);
+	SMART_READ_DATA_OUTDATA * ReadThreshold(DWORD * error);
+	SMART_READ_LOG_OUTDATA * ReadLog(int logAddress, int sectorCount, DWORD * error);
+	BYTE * ReadLogExt(int logAddress, int sectorCount, DWORD * error);
 
 private:
-	BYTE * CommandInterface(BYTE feature, BYTE command, int outLength, int bufferSize);
+	BYTE * CommandInterface(BYTE feature, BYTE command, int outLength, int bufferSize, DWORD * error);
 };

@@ -51,7 +51,7 @@ BOOL CSmartDevice::Close()
  * @return output dataÅ^NULL=error
  */
 BYTE * CSmartDevice::CommandInterface
-	(BYTE feature, BYTE command, int outLength, int bufferSize)
+	(BYTE feature, BYTE command, int outLength, int bufferSize, DWORD * error)
 {
 	BYTE * sendCmdOutParam = new BYTE [outLength];
 	::ZeroMemory(sendCmdOutParam, outLength);
@@ -80,7 +80,12 @@ BYTE * CSmartDevice::CommandInterface
 			&dwReturned,
 			NULL);
 
-	if (!bRet || dwReturned != sizeof(SMART_READ_DATA_OUTDATA))
+	if (bRet == 0)
+	{
+		*error = ::GetLastError();
+	}
+
+	if ((bRet == 0) || (dwReturned != sizeof(SMART_READ_DATA_OUTDATA)))
 	{
 		// execute error or return size error
 
@@ -97,14 +102,15 @@ BYTE * CSmartDevice::CommandInterface
  *
  * @return IDENTIFY
  */
-IDENTIFY_DEVICE_OUTDATA * CSmartDevice::ReadIdentify()
+IDENTIFY_DEVICE_OUTDATA * CSmartDevice::ReadIdentify(DWORD * error)
 {
 	return
 		(IDENTIFY_DEVICE_OUTDATA *)CommandInterface(
 			0,
 			ATAPI_IDENTIFY_DEVICE,
 			sizeof(IDENTIFY_DEVICE_OUTDATA),
-			IDENTIFY_BUFFER_SIZE);
+			IDENTIFY_BUFFER_SIZE,
+			error);
 }
 
 /**
@@ -112,14 +118,15 @@ IDENTIFY_DEVICE_OUTDATA * CSmartDevice::ReadIdentify()
  *
  * @return S.M.A.R.T. value
  */
-SMART_READ_DATA_OUTDATA * CSmartDevice::ReadSmart()
+SMART_READ_DATA_OUTDATA * CSmartDevice::ReadSmart(DWORD * error)
 {
 	return
 		(SMART_READ_DATA_OUTDATA *)CommandInterface(
 			ATA_SMART_READ_VALUES,
 			ATAPI_SMART_READ_DATA,
 			sizeof(SMART_READ_DATA_OUTDATA),
-			READ_ATTRIBUTE_BUFFER_SIZE);
+			READ_ATTRIBUTE_BUFFER_SIZE,
+			error);
 }
 
 /**
@@ -127,14 +134,15 @@ SMART_READ_DATA_OUTDATA * CSmartDevice::ReadSmart()
  *
  * @return threshold value
  */
-SMART_READ_DATA_OUTDATA * CSmartDevice::ReadThreshold()
+SMART_READ_DATA_OUTDATA * CSmartDevice::ReadThreshold(DWORD * error)
 {
 	return
 		(SMART_READ_DATA_OUTDATA *)CommandInterface(
 			ATA_SMART_READ_THRESHOLDS,
 			ATAPI_SMART_READ_DATA,
 			sizeof(SMART_READ_DATA_OUTDATA),
-			READ_THRESHOLD_BUFFER_SIZE);
+			READ_THRESHOLD_BUFFER_SIZE,
+			error);
 }
 
 /**
@@ -145,7 +153,7 @@ SMART_READ_DATA_OUTDATA * CSmartDevice::ReadThreshold()
  * @param logAddress log address
  * @param sectorCount sector count
  */
-SMART_READ_LOG_OUTDATA * CSmartDevice::ReadLog(int logAddress, int sectorCount)
+SMART_READ_LOG_OUTDATA * CSmartDevice::ReadLog(int logAddress, int sectorCount, DWORD * error)
 {
 	int outLength = 0x20 + SMART_LOG_SECTOR_SIZE * sectorCount;
 	BYTE * sendCmdOutParam = new BYTE [outLength];
@@ -177,8 +185,10 @@ SMART_READ_LOG_OUTDATA * CSmartDevice::ReadLog(int logAddress, int sectorCount)
 			&dwReturned,
 			NULL);
 
-	if (!bRet)
+	if (bRet == 0)
 	{
+		*error = ::GetLastError();
+
 		delete sendCmdOutParam;
 
 		return NULL;
@@ -195,7 +205,7 @@ SMART_READ_LOG_OUTDATA * CSmartDevice::ReadLog(int logAddress, int sectorCount)
  * @param logAddress log address
  * @param sectorCount sector count
  */
-BYTE * CSmartDevice::ReadLogExt(int logAddress, int sectorCount)
+BYTE * CSmartDevice::ReadLogExt(int logAddress, int sectorCount, DWORD * error)
 {
 	int datasize = SMART_LOG_SECTOR_SIZE * sectorCount;
 
@@ -261,7 +271,7 @@ BYTE * CSmartDevice::ReadLogExt(int logAddress, int sectorCount)
 			&num_out,
 			NULL);
 
-	if (recv)
+	if (recv != 0)
 	{
 		BYTE * data = new BYTE [datasize];
 
@@ -271,6 +281,8 @@ BYTE * CSmartDevice::ReadLogExt(int logAddress, int sectorCount)
 	}
 	else
 	{
+		*error = ::GetLastError();
+
 		return NULL;
 	}
 }

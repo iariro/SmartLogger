@@ -64,10 +64,24 @@ CStartServiceErrorEvent::CStartServiceErrorEvent(TCHAR * info)
 /**
  * @brief オブジェクトの構築とともに基底クラスの初期化を行う。
  */
-CGetSmartErrorEvent::CGetSmartErrorEvent()
+CGetSmartErrorEvent::CGetSmartErrorEvent(DWORD readIdentifyError, DWORD readSmartError, DWORD readThresholdError, DWORD readLogError)
 	: CReportEventData(EVENTLOG_ERROR_TYPE, 0, EVENT_GET_SMART_ERROR)
 {
+	TCHAR readIdentifyErrorString [BUFSIZ];
+	TCHAR readSmartErrorString [BUFSIZ];
+	TCHAR readThresholdErrorString [BUFSIZ];
+	TCHAR readLogErrorString [BUFSIZ];
+
+	wsprintf(readIdentifyErrorString, _T("%d"), readIdentifyError);
+	wsprintf(readSmartErrorString, _T("%d"), readSmartError);
+	wsprintf(readThresholdErrorString, _T("%d"), readThresholdError);
+	wsprintf(readLogErrorString, _T("%d"), readLogError);
+
 	strings = new CCharPtrArray();
+	strings->Add(readIdentifyErrorString);
+	strings->Add(readSmartErrorString);
+	strings->Add(readThresholdErrorString);
+	strings->Add(readLogErrorString);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
