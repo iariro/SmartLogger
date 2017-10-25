@@ -23,7 +23,6 @@ CStartServiceEvent::CStartServiceEvent(CString fluentCatPath, CString logFilePat
 	TCHAR intervalString [BUFSIZ];
 	wsprintf(intervalString, _T("%d"), smartWatchInterval);
 
-	strings = new CCharPtrArray();
 	strings->Add(fluentCatPath.GetBuffer());
 	strings->Add(logFilePath.GetBuffer());
 	strings->Add(fluentdSensorName.GetBuffer());
@@ -55,8 +54,22 @@ CStopServiceEvent::CStopServiceEvent(void)
 CStartServiceErrorEvent::CStartServiceErrorEvent(TCHAR * info)
 	: CReportEventData(EVENTLOG_ERROR_TYPE, 0, EVENT_START_SERVICE_ERROR)
 {
-	strings = new CCharPtrArray();
 	strings->Add(info);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief オブジェクトの構築とともに基底クラスの初期化を行う。
+ */
+CGetSmartSuccessEvent::CGetSmartSuccessEvent(CString filename, int blockCount)
+	: CReportEventData(EVENTLOG_INFORMATION_TYPE, 0, EVENT_GET_SMART_SUCCESS)
+{
+	TCHAR blockCountString [BUFSIZ];
+	wsprintf(blockCountString, _T("%d"), blockCount);
+
+	strings->Add(filename.GetBuffer());
+	strings->Add(blockCountString);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +90,6 @@ CGetSmartErrorEvent::CGetSmartErrorEvent(DWORD readIdentifyError, DWORD readSmar
 	wsprintf(readThresholdErrorString, _T("%d"), readThresholdError);
 	wsprintf(readLogErrorString, _T("%d"), readLogError);
 
-	strings = new CCharPtrArray();
 	strings->Add(readIdentifyErrorString);
 	strings->Add(readSmartErrorString);
 	strings->Add(readThresholdErrorString);
@@ -94,7 +106,6 @@ CGetSmartErrorEvent::CGetSmartErrorEvent(DWORD readIdentifyError, DWORD readSmar
 CFileWriteErrorEvent::CFileWriteErrorEvent(CString path)
 	: CReportEventData(EVENTLOG_ERROR_TYPE, 0, EVENT_FILE_WRITE_ERROR)
 {
-	strings = new CCharPtrArray();
 	strings->Add(path.GetBuffer());
 }
 
@@ -117,9 +128,8 @@ CSendtoFluentdEvent1::CSendtoFluentdEvent1(CString commandLine)
  * @brief オブジェクトの構築とともに基底クラスの初期化を行う。
  *
  * @param error エラーコード
- * @param json 送信JSON文字列
  */
-CSendtoFluentdEvent::CSendtoFluentdEvent(int error, char * json)
+CSendtoFluentdEvent::CSendtoFluentdEvent(int error)
 	: CReportEventData(EVENTLOG_INFORMATION_TYPE, 0, EVENT_SENDTO_FLUENTD_EVENT)
 {
 	TCHAR errorString [BUFSIZ];
@@ -127,13 +137,7 @@ CSendtoFluentdEvent::CSendtoFluentdEvent(int error, char * json)
 	// ステータス、進捗指標を数値から文字列に変換
 	wsprintf(errorString, _T("%d"), error);
 
-	CStringA jsonStringA(json);
-	CString jsonString;
-	jsonString =jsonStringA;
-
-	strings = new CCharPtrArray();
 	strings->Add(errorString);
-	strings->Add(jsonString.GetBuffer());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +157,6 @@ CSendStatusToSCMErrorEvent::CSendStatusToSCMErrorEvent(DWORD status, DWORD check
 	wsprintf(szIntegerStatus, _T("%d"), status);
 	wsprintf(szIntegerCheckPoint, _T("%d"), checkPoint);
 
-	strings = new CCharPtrArray();
 	strings->Add(szIntegerStatus);
 	strings->Add(szIntegerCheckPoint);
 }

@@ -1,8 +1,6 @@
 
 /**
- * @brief 
- *
- * @author kumagai
+ * @brief SMARTLoggerサービス開始イベント
  */
 class CStartServiceEvent
 	: public CReportEventData
@@ -14,8 +12,6 @@ public:
 /**
  * @brief   SMART Logger停止についてのログ
  * @ingroup LogData
- *
- * @author  kumagai
  */
 class CStopServiceEvent
 	: public CReportEventData
@@ -27,14 +23,23 @@ public:
 /**
  * @brief  サービス開始時のエラーについてのログ
  * @ingroup LogData
- *
- * @author abem
  */
 class CStartServiceErrorEvent
 	: public CReportEventData
 {
 public:
 	CStartServiceErrorEvent(TCHAR * info);
+};
+
+/**
+ * @brief SMART取得エラーについてのログ
+ * @ingroup LogData
+ */
+class CGetSmartSuccessEvent
+	: public CReportEventData
+{
+public:
+	CGetSmartSuccessEvent(CString filename, int blockCount);
 };
 
 /**
@@ -78,14 +83,12 @@ class CSendtoFluentdEvent
 	: public CReportEventData
 {
 public:
-	CSendtoFluentdEvent(int error, char * json);
+	CSendtoFluentdEvent(int error);
 };
 
 /**
  * @brief  SCMへのサービス状態通知でのエラーについてのログ
  * @ingroup LogData
- *
- * @author abem
  */
 class CSendStatusToSCMErrorEvent
 	: public CReportEventData
