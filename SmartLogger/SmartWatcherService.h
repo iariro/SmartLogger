@@ -9,4 +9,4 @@ extern BOOL SendStatusToSCM(DWORD	dwCurrentState,				// サービスステータス
 					 DWORD	dwWaitHint);				// 待機時間(ms)
 extern DWORD WINAPI smartLogger_server(LPVOID lpParameter);
 
-void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentdSensorName, CString fluentdHostName);
+int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentdSensorName, CString fluentdHostName);

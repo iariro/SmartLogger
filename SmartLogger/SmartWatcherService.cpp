@@ -367,7 +367,7 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 		return 0;
 	}
 
-	int smartWatchInterval;
+	DWORD smartWatchInterval;
 	if (smartWatchInterval2 != NULL)
 	{
 		smartWatchInterval = *smartWatchInterval2 * 1000;
@@ -379,19 +379,52 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 
 	CSmartLoggerLogging::PutLog(&CStartServiceEvent(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName, smartWatchInterval));
 
-	GetAndWriteSmart(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName);
-
-	DWORD last = ::GetTickCount();
+	int retryCount = 0;
+	BOOL lastSuccess = FALSE;
+	DWORD lastSuccessTime;
 
 	while (TRUE)
 	{
 		DWORD now = ::GetTickCount();
 
-		if (last + smartWatchInterval < now)
+		if (!lastSuccess || (now - lastSuccessTime > smartWatchInterval))
 		{
-			GetAndWriteSmart(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName);
+			// first time or interval time has passed.
 
-			last += smartWatchInterval;
+			int blockCount =
+				GetAndWriteSmart(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName);
+
+			if (blockCount > 0)
+			{
+				// success
+
+				lastSuccessTime = now;
+				lastSuccess = TRUE;
+			}
+			else
+			{
+				// error
+
+				if (retryCount <= 0)
+				{
+					// first error
+
+					retryCount = 1;
+				}
+				else
+				{
+					// retrying
+
+					retryCount--;
+					if (retryCount <= 0)
+					{
+						// retry limit
+
+						lastSuccessTime = now;
+						lastSuccess = TRUE;
+					}
+				}
+			}
 		}
 
 		::Sleep(1000);
@@ -559,8 +592,9 @@ char * CreateSmartJson(BYTE * smart, BYTE * log)
 	return jsonBuffer;
 }
 
-void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentdSensorName, CString fluentdHostName)
+int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentdSensorName, CString fluentdHostName)
 {
+	int blockCount = 0;
 	CSmartDevice device;
 
 	IDENTIFY_DEVICE_OUTDATA * identify = NULL;
@@ -588,7 +622,6 @@ void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluent
 		{
 			// got something
 
-			int blockCount = 0;
 			if (identify != NULL)
 			{
 				blockCount++;
@@ -693,6 +726,7 @@ void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluent
 						file.Write((BYTE *)log->sSendCmdOutParam.bBuffer, sizeof(ata_smart_exterrlog));
 					}
 					file.Close();
+					CSmartLoggerLogging::PutLog(&CGetSmartSuccessEvent(filename, blockCount));
 				}
 				else
 				{
@@ -747,9 +781,11 @@ void GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluent
 					fluentdHostName,
 					jsonBuffer);
 
-			CSmartLoggerLogging::PutLog(&CSendtoFluentdEvent(sendRecv, jsonBuffer));
+			CSmartLoggerLogging::PutLog(&CSendtoFluentdEvent(sendRecv));
 		}
 
 		delete [] jsonBuffer;
 	}
+
+	return blockCount;
 }
