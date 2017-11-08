@@ -19,36 +19,43 @@
 #include "Utility/BinaryBlock.h"
 #include "Registry/RegistryValue.h"
 #include "Registry/RegistryKey.h"
+#include "DriveSize.h"
 
-int SMART_WATCH_INTERVAL = (1000 * 3600);
-
+const int JSON_BUFFER_SIZE = 10000;
+const int SMART_WATCH_INTERVAL = (1000 * 3600);
 const CString registryPath =
 	_T("HKEY_LOCAL_MACHINE\\Software\\TOPS\\SmartLogger");
 
+/**
+ * @brief main routine of SMARTLogger
+ * @param lpParameter no use
+ */
 DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 {
 	CString * logFilePath = NULL;
 	CString * fluentcatPath = NULL;
 	CString * fluentdSensorName = NULL;
 	CString * fluentdHostName = NULL;
+	DWORD * smartWatchStartWait2 = NULL;
 	DWORD * smartWatchInterval2 = NULL;
 
 	CRegistryRootKey root(registryPath);
 
-	if(root.IsValid())
+	if (root.IsValid())
 	{
-		// ルートキーは有効。
+		// root key is valid.
 
 		CString subKeyPath = CRegistryKey::GetSubKeyPath(registryPath);
 		CRegistryKey * subKey = root.OpenForRead(subKeyPath);
 		if (subKey != NULL)
 		{
-			// サブキーオープン成功。
+			// sub key open success.
 
 			logFilePath = subKey->GetStringValue(_T("LogFilePath"));
 			fluentcatPath = subKey->GetStringValue(_T("FluentcatPath"));
 			fluentdSensorName = subKey->GetStringValue(_T("FluentdSensorName"));
 			fluentdHostName = subKey->GetStringValue(_T("FluentdHostName"));
+			smartWatchStartWait2 = subKey->GetDWordValue(_T("SmartWatchStartWait"));
 			smartWatchInterval2 = subKey->GetDWordValue(_T("SmartWatchInterval"));
 
 			delete subKey;
@@ -60,10 +67,20 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 		fluentdSensorName == NULL ||
 		fluentdHostName == NULL)
 	{
+		// Required keys exist.
+
 		CSmartLoggerLogging::PutLog(&CStartServiceErrorEvent(_T("設定不足")));
 		return 0;
 	}
 
+	// determine start wait
+	DWORD smartWatchStartWait = 0;
+	if (smartWatchStartWait2 != NULL)
+	{
+		smartWatchStartWait = *smartWatchStartWait2 * 1000;
+	}
+
+	// determine interval wait
 	DWORD smartWatchInterval;
 	if (smartWatchInterval2 != NULL)
 	{
@@ -74,7 +91,12 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 		smartWatchInterval = SMART_WATCH_INTERVAL;
 	}
 
-	CSmartLoggerLogging::PutLog(&CStartServiceEvent(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName, smartWatchInterval));
+	CSmartLoggerLogging::PutLog(
+		&CStartServiceEvent(*fluentcatPath, *logFilePath, *fluentdSensorName, *fluentdHostName, smartWatchInterval));
+
+	// start wait
+	// Because the disk may be busy failing.
+	::Sleep(smartWatchStartWait);
 
 	int retryCount = 0;
 	BOOL lastSuccess = FALSE;
@@ -143,6 +165,10 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 	{
 		delete fluentdHostName;
 	}
+	if (smartWatchStartWait2 != NULL)
+	{
+		delete smartWatchStartWait2;
+	}
 	if (smartWatchInterval2 != NULL)
 	{
 		delete smartWatchInterval2;
@@ -151,67 +177,13 @@ DWORD WINAPI smartLogger_server(LPVOID lpParameter)
 	return 0;
 }
 
-const int JSON_BUFFER_SIZE = 10000;
-
 /**
- * @brief Get drive size and build binary list or output Json.
- *
- * @param outMode OUT_FILE or OUT_STDOUT_JSON
- * @param list2 binary list of body part
- * @param blockCount reference of block count
- * @param nRetCode reference of return code
- * @param allocSuccess reference of Success and failure
- *
- * @date 2016/09/20
- *	- kumagai : new
+ * @brief create Json string.
+ * @param smart SMART value
+ * @param log SMART error log
+ * @param driveSizeArray array of drive size
  */
-void GetDriveSize(char * jsonBuffer, int & jsonBufferLength, int & count)
-{
-	DWORD dwDrive;
-	char pszDrive[16];
-	UINT DriveType;
-	BOOL fResult;
-	unsigned __int64 i64FreeBytesToCaller, i64TotalBytes, i64FreeBytes;
-
-	dwDrive = GetLogicalDrives();
-	for (int nDrive = 0; nDrive < 26; nDrive++)
-	{
-		if (dwDrive & (1 << nDrive))
-		{
-			sprintf_s(pszDrive, sizeof(pszDrive), "%c:\\", nDrive + 'A');
-
-			DriveType = GetDriveTypeA(pszDrive);
-			if (DriveType == DRIVE_FIXED)
-			{
-				fResult =
-					::GetDiskFreeSpaceExA(
-						pszDrive,
-						(PULARGE_INTEGER)&i64FreeBytesToCaller,
-						(PULARGE_INTEGER)&i64TotalBytes,
-						(PULARGE_INTEGER)&i64FreeBytes);
-
-				if (count > 0)
-				{
-					jsonBuffer[jsonBufferLength] = ',';
-					jsonBufferLength++;
-				}
-
-				jsonBufferLength += sprintf_s(
-					jsonBuffer + jsonBufferLength,
-					JSON_BUFFER_SIZE - jsonBufferLength,
-					"\"Drive%c_TotalSize\": \"%I64u\","
-					"\"Drive%c_FreeSize\": \"%I64u\"",
-					'A' + nDrive,
-					i64TotalBytes,
-					'A' + nDrive,
-					i64FreeBytes);
-				count++;
-			}
-		}
-	}
-}
-
-char * CreateSmartJson(BYTE * smart, BYTE * log)
+char * CreateSmartJson(BYTE * smart, BYTE * log, CDriveSizeArray * driveSizeArray)
 {
 	int count = 0;
 	char * jsonBuffer = new char [JSON_BUFFER_SIZE];
@@ -222,6 +194,8 @@ char * CreateSmartJson(BYTE * smart, BYTE * log)
 
 	if (smart != NULL)
 	{
+		// SMART value exist.
+
 		for (int i=1 ; i<512 ; i+=12)
 		{
 			int id = smart[i];
@@ -230,6 +204,8 @@ char * CreateSmartJson(BYTE * smart, BYTE * log)
 
 			if (id == 0)
 			{
+				// The effective part is over.
+
 				break;
 			}
 
@@ -238,6 +214,8 @@ char * CreateSmartJson(BYTE * smart, BYTE * log)
 			{
 				if (attributeIdAndName[j].id == id)
 				{
+					// target attribute.
+
 					name = attributeIdAndName[j].name;
 					break;
 				}
@@ -245,6 +223,8 @@ char * CreateSmartJson(BYTE * smart, BYTE * log)
 
 			if (count > 0)
 			{
+				// After the second one.
+
 				jsonBuffer[jsonBufferLength] = ',';
 				jsonBufferLength++;
 			}
@@ -263,11 +243,15 @@ char * CreateSmartJson(BYTE * smart, BYTE * log)
 
 	if (log != NULL)
 	{
+		// SMART error log exist.
+
 		int errorLogCount = 0;
 		errorLogCount = log[452] + (log[453] << 8);
 
 		if (count > 0)
 		{
+			// After the second one.
+
 			jsonBuffer[jsonBufferLength] = ',';
 			jsonBufferLength++;
 		}
@@ -279,7 +263,27 @@ char * CreateSmartJson(BYTE * smart, BYTE * log)
 			errorLogCount);
 	}
 
-	GetDriveSize(jsonBuffer, jsonBufferLength, count);
+	for (int i=0 ; i<driveSizeArray->GetSize() ; i++)
+	{
+		if (count > 0)
+		{
+			// After the second one.
+
+			jsonBuffer[jsonBufferLength] = ',';
+			jsonBufferLength++;
+		}
+
+		jsonBufferLength += sprintf_s(
+			jsonBuffer + jsonBufferLength,
+			JSON_BUFFER_SIZE - jsonBufferLength,
+			"\"Drive%c_TotalSize\": \"%I64u\","
+			"\"Drive%c_FreeSize\": \"%I64u\"",
+			driveSizeArray->GetAt(i)->driveLetter,
+			driveSizeArray->GetAt(i)->i64TotalBytes,
+			driveSizeArray->GetAt(i)->driveLetter,
+			driveSizeArray->GetAt(i)->i64FreeBytes);
+		count++;
+	}
 
 	jsonBuffer[jsonBufferLength] = '}';
 	jsonBufferLength++;
@@ -289,6 +293,13 @@ char * CreateSmartJson(BYTE * smart, BYTE * log)
 	return jsonBuffer;
 }
 
+/**
+ * @brief create Json string.
+ * @param fluentCatPath path of fluent-cat
+ * @param logFilePath path of log file
+ * @param fluentdSensorName sensor name on fluentd
+ * @param fluentdHostName host name of fluentd
+ */
 int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentdSensorName, CString fluentdHostName)
 {
 	int blockCount = 0;
@@ -299,8 +310,14 @@ int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentd
 	SMART_READ_DATA_OUTDATA * threshold = NULL;
 	SMART_READ_LOG_OUTDATA * log = NULL;
 
+	// get all drive size.
+	CDriveSizeArray * driveSizeArray = new CDriveSizeArray();
+	blockCount += (int)driveSizeArray->GetSize();
+
 	if (device.Open(0))
 	{
+		// device open success.
+
 		DWORD readIdentifyError;
 		DWORD readSmartError;
 		DWORD readThresholdError;
@@ -338,7 +355,7 @@ int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentd
 
 			if (! logFilePath.IsEmpty())
 			{
-				// ログ出力パスの指定あり
+				// specified log file path
 
 				CTime time = CTime::GetCurrentTime();
 				char header [68];
@@ -371,14 +388,48 @@ int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentd
 
 				if (file.Open(filename, CFile::modeCreate|CFile::modeNoTruncate|CFile::modeWrite|CFile::typeBinary))
 				{
+					// file open success.
+
 					file.SeekToEnd();
 					file.Write(header, sizeof(header));
 					BYTE blockHeader [12];
+					::ZeroMemory(blockHeader, sizeof(blockHeader));
+
+					// output drive size.
+					for (int i=0 ; i<driveSizeArray->GetSize() ; i++)
+					{
+						blockHeader[0] = 1;
+						blockHeader[4] = 1;
+
+						int size = 4 + 2 + 8 + 8;
+						blockHeader[8] = (size & 0xff);
+						blockHeader[9] = (size & 0xff00) >> 8;
+						blockHeader[10] = (size & 0xff0000) >> 16;
+						blockHeader[11] = (size & 0xff000000) >> 24;
+
+						BYTE body [4 + 2 + 8 + 8];
+						body[0] = 2;
+						body[1] = 0;
+						body[2] = 0;
+						body[3] = 0;
+
+						body[4] = driveSizeArray->GetAt(i)->driveLetter;
+						body[5] = 0x00;
+
+						::CopyMemory(body + 4 + 2, &driveSizeArray->GetAt(i)->i64TotalBytes, sizeof(unsigned __int64));
+						::CopyMemory(body + 4 + 2 + 8, &driveSizeArray->GetAt(i)->i64FreeBytes, sizeof(unsigned __int64));
+						file.Write(blockHeader, 12);
+						file.Write(body, sizeof(body));
+					}
+
+					// output SMART info
 					::ZeroMemory(blockHeader, sizeof(blockHeader));
 					blockHeader[0] = 10;
 
 					if (identify != NULL)
 					{
+						// identify is acquired.
+
 						blockHeader[5] = 0xec;
 						blockHeader[6] = 0x00;
 						blockHeader[8] = IDENTIFY_BUFFER_SIZE % 0x100; // size
@@ -390,6 +441,8 @@ int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentd
 					}
 					if (smartValue != NULL)
 					{
+						// smartValue is acquired.
+
 						blockHeader[5] = 0xb0;
 						blockHeader[6] = 0xd0;
 						blockHeader[8] = READ_ATTRIBUTE_BUFFER_SIZE % 0x100; // size
@@ -401,6 +454,8 @@ int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentd
 					}
 					if (threshold != NULL)
 					{
+						// threshold is acquired.
+
 						blockHeader[5] = 0xb0;
 						blockHeader[6] = 0xd1;
 						blockHeader[8] = READ_THRESHOLD_BUFFER_SIZE % 0x100; // size
@@ -412,6 +467,8 @@ int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentd
 					}
 					if (log != NULL)
 					{
+						// error log is acquired.
+
 						blockHeader[5] = 0xb0;
 						blockHeader[6] = 0xd5;
 						blockHeader[7] = 0x00;
@@ -427,6 +484,8 @@ int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentd
 				}
 				else
 				{
+					// file open fail.
+
 					CSmartLoggerLogging::PutLog(&CFileWriteErrorEvent(filename));
 				}
 			}
@@ -440,13 +499,18 @@ int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentd
 	}
 	else
 	{
+		// device open fail.
+
 		CSmartLoggerLogging::PutLog(&CStartServiceErrorEvent(_T("CSmartDevice::open")));
 	}
 
 	char * jsonBuffer =
 		CreateSmartJson(
 			smartValue != NULL ? smartValue->pData : NULL,
-			log != NULL ? log->pData : NULL);
+			log != NULL ? log->pData : NULL,
+			driveSizeArray);
+
+	delete driveSizeArray;
 
 	if (identify != NULL)
 	{
@@ -465,24 +529,21 @@ int GetAndWriteSmart(CString fluentCatPath, CString logFilePath, CString fluentd
 		delete log;
 	}
 
-	if (jsonBuffer != NULL)
+	if (! fluentCatPath.IsEmpty() && ! fluentdSensorName.IsEmpty() && ! fluentdHostName.IsEmpty())
 	{
-		if (! fluentCatPath.IsEmpty() && ! fluentdSensorName.IsEmpty() && ! fluentdHostName.IsEmpty())
-		{
-			// fluentcat呼び出し用パラメータの指定あり
+		// fluentcat呼び出し用パラメータの指定あり
 
-			int sendRecv =
-				SendtoFluentCat(
-					fluentCatPath,
-					fluentdSensorName,
-					fluentdHostName,
-					jsonBuffer);
+		int sendRecv =
+			SendtoFluentCat(
+				fluentCatPath,
+				fluentdSensorName,
+				fluentdHostName,
+				jsonBuffer);
 
-			CSmartLoggerLogging::PutLog(&CSendtoFluentdEvent(sendRecv));
-		}
-
-		delete [] jsonBuffer;
+		CSmartLoggerLogging::PutLog(&CSendtoFluentdEvent(sendRecv));
 	}
+
+	delete [] jsonBuffer;
 
 	return blockCount;
 }
