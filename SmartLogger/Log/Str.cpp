@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "Str.h"
 
+#pragma warning(disable:4996)
+
 /**
  * @brief  オブジェクトの構築とともに内部実データの初期化を行う。
  *

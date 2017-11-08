@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "StrArray.h"
 
+#pragma warning(disable:4996)
+
 /**
  * @brief  オブジェクトの構築とともに実データの初期化を行う。
  *
