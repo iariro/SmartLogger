@@ -1,5 +1,5 @@
 
-extern int DispatchWcpa(void);
+extern int DispatchService(void);
 extern void WINAPI ServiceMain(DWORD argc, LPTSTR *argv);
 extern VOID WINAPI ServiceCtrlHandler(DWORD fdwControl);
 extern BOOL SendStatusToSCM(DWORD	dwCurrentState,				// サービスステータス

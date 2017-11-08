@@ -98,7 +98,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		//
 		// SCM ‚©‚çŒÄ‚Ño‚µ‚ªs‚í‚ê‚é‚Æ³í‚ÉÀs‚³‚ê‚é
 		//
-		nRetFunc = DispatchWcpa();
+		nRetFunc = DispatchService();
 	}
 
 	return nRetFunc;

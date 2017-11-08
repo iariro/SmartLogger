@@ -30,7 +30,7 @@ DWORD	g_dwCurrentState = SERVICE_START_PENDING;	/**< 現在のサービス状態	*/
 
 
 /**
- * @brief	SCM から呼び出された場合、Wcpa サービスを開始させる
+ * @brief	SCM から呼び出された場合、SMARTLoggerサービスを開始させる
  *
  * SCM 以外からの呼び出しでは失敗する
  *
@@ -40,7 +40,7 @@ DWORD	g_dwCurrentState = SERVICE_START_PENDING;	/**< 現在のサービス状態	*/
  * @retval	0以外	エラー
  *            - 1:サービスメイン関数の呼び出しに失敗
  */
-int DispatchWcpa(void)
+int DispatchService(void)
 {
 	/*
 	 * 変数定義
