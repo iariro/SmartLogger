@@ -124,7 +124,7 @@ int SendtoFluentCat(CString fluentcatPath, CString sensorName, CString address, 
 
 	// パイプへの書き込み（子プロセスへの送信）
 	DWORD numberOfBytesWritten;
-	if (!WriteFile(writePipe, message, strlen(message), &numberOfBytesWritten, NULL)) {
+	if (!WriteFile(writePipe, message, (DWORD)strlen(message), &numberOfBytesWritten, NULL)) {
 		printError("WriteFile");
 		return -1;
 	}
