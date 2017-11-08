@@ -5,7 +5,7 @@
 #include "SmartLogger.h"
 
 #include "ServiceInstall.h"
-#include "SmartWatcherService.h"
+#include "SmartLoggerService.h"
 
 #include "Log/Str.h"
 #include "Log/StrArray.h"

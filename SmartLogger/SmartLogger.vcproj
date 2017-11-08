@@ -345,7 +345,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SmartWatcherService.cpp"
+				RelativePath=".\SmartLoggerService.cpp"
 				>
 			</File>
 			<File
@@ -467,7 +467,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SmartWatcherService.h"
+				RelativePath=".\SmartLoggerService.h"
 				>
 			</File>
 			<File

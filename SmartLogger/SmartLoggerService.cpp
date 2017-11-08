@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "Windows.h"
 #include "winsvc.h"
-#include "SmartWatcherService.h"
+#include "SmartLoggerService.h"
 #include "ServiceInstall.h"
 
 #include "winioctl.h"
